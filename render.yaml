@@ -1,0 +1,32 @@
+services:
+  # Django Web Service for Admin Panel and API
+  - type: web
+    name: englishbot-api
+    runtime: python
+    buildCommand: "pip install -r requirements.txt && python backend/manage.py migrate && python backend/manage.py collectstatic --noinput"
+    startCommand: "gunicorn --chdir backend core.wsgi:application"
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: "*"
+      - key: BOT_TOKEN
+        sync: false
+
+  # Telegram Bot Background Worker
+  - type: worker
+    name: englishbot-worker
+    runtime: python
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "cd bot && python bot.py"
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: BOT_TOKEN
+        sync: false
+      - key: DEBUG
+        value: "False"
